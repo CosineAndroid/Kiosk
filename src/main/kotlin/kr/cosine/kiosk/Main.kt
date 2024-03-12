@@ -14,17 +14,14 @@ private val rootCategories = mapOf(
     "과자" to listOf(Ace(), HomerunBall()),
 ).toList()
 
-private var money = 1000
-
-private val cart = mutableListOf<Food>()
-
-private val bought = mutableListOf<Food>()
+private var buyer = Buyer()
 
 fun main(args: Array<out String>) {
     main()
 }
 
 private fun main() {
+    println("0. 종료하기")
     println("1. 메뉴판")
     println("2. 장바구니")
     println("3. 구매한 품목")
@@ -36,6 +33,7 @@ private fun main() {
 private fun mainAction() {
     val index = getIndex() + 1
     when (index) {
+        0 -> return
         1 -> menu()
         2 -> cart()
         3 -> bought()
@@ -56,9 +54,9 @@ private fun menu() {
 }
 
 private fun cart() {
-    println("[ 장바구니 ] (보유 중인 돈: $money)")
+    println("[ 장바구니 ] (보유 중인 돈: ${buyer.money})")
     var totalPrice = 0
-    cart.forEach { food ->
+    buyer.cart.forEach { food ->
         val price = food.price
         totalPrice += price
         println("${food.name} (${price}원)")
@@ -78,26 +76,28 @@ private fun cartAction() {
         0 -> main()
 
         1 -> {
+            val cart = buyer.cart
             if (cart.isEmpty()) {
                 println("장바구니가 비어있습니다.")
                 cartAction()
                 return
             }
             val price = cart.sumOf { it.price }
-            if (money < price) {
+            if (buyer.money < price) {
                 println("보유 중인 돈이 부족합니다.")
                 cartAction()
                 return
             }
-            money -= price
-            println("구매를 완료하였습니다! (남은 돈: $money)")
+            buyer.money -= price
+            println("구매를 완료하였습니다! (남은 돈: ${buyer.money})")
             println("")
-            bought.addAll(cart)
+            buyer.bought.addAll(cart)
             cart.clear()
             main()
         }
 
         2 -> {
+            val cart = buyer.cart
             if (cart.isEmpty()) {
                 println("장바구니가 비어있습니다.")
                 cartAction()
@@ -118,7 +118,7 @@ private fun cartAction() {
 private fun bought() {
     println("[ 구매한 품목 ]")
     var expenses = 0
-    bought.forEach { food ->
+    buyer.bought.forEach { food ->
         val price = food.price
         expenses += price
         println("${food.name} (${price}원)")
@@ -155,7 +155,7 @@ private fun getCategoryIndex(): Int {
 private fun menu(categoryIndex: Int) {
     val category = rootCategories[categoryIndex]
     println("")
-    println("[ ${category.first} 메뉴판 ] (보유 중인 돈: $money)")
+    println("[ ${category.first} 메뉴판 ] (보유 중인 돈: ${buyer.money})")
     println("0. 뒤로가기")
     val foods = category.second
     foods.forEachIndexed { index, food ->
@@ -170,7 +170,7 @@ private fun putMenu(foods: List<Food>, categoryIndex: Int) {
         menu()
         return
     }
-    cart.add(food)
+    buyer.cart.add(food)
     println("${food.name}을(를) 장바구니에 담았습니다.")
     putMenu(foods, categoryIndex)
 }
